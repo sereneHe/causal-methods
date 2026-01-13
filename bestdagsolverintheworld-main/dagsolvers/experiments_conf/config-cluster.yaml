@@ -1,0 +1,20 @@
+hydra:
+  sweeper:
+    max_batch_size: 500 # There is a quota on RCI cluster that limits number of scheduled jobs to 500.
+    params:
+#      max_batch_size: 1
+      #scenario:
+      #distribution_coefficient: 1,2,3,4
+experiment: DAGS article
+tracking: mlflow
+plot: false
+plot_dpi: 300
+defaults:
+  - solver: milp
+  - problem: dynamic
+  - override hydra/launcher: configured_submitit_slurm
+  - _self_
+
+
+
+

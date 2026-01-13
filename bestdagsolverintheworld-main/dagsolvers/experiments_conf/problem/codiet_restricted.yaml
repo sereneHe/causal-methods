@@ -1,0 +1,9 @@
+name: codiet
+seed: 1
+n: 500
+#n: null
+p: 0
+data_path: '../../codiet_data/'
+normalize: False
+scale_data: quantile09
+features: [protein, weight-control, hba1c, cholesterol, serving-size, starch, vitamin-d, dopamine, serotonin, caffeine, calcium, glucose, zinc, magnesium, fruit]

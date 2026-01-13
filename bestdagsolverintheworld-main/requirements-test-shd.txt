@@ -1,0 +1,6 @@
+# Minimal deps to run: tests/test_shd_utils.py
+# Avoids heavy/incompatible solver deps pulled by requirements.txt (e.g. pygobnilp/numba/llvmlite).
+pytest
+numpy
+scipy
+igraph

@@ -1,0 +1,4 @@
+# Development/test dependencies
+# Keep runtime deps in requirements*.txt; put test-only deps here.
+pytest>=8
+igraph>=0.10

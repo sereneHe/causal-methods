@@ -1,0 +1,12 @@
+# Minimal deps to run tests/exdbn_runningtime.py
+# Avoids solver stacks that currently require Python < 3.10 (e.g. pygobnilp -> numba -> llvmlite==0.36)
+
+numpy
+pandas
+networkx
+omegaconf
+igraph
+scipy
+
+# MILP solver backend (requires a working Gurobi installation/license)
+gurobipy

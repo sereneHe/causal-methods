@@ -1,0 +1,2 @@
+dataset,features,samples,degree,runtime_seconds,gap,fdr,tpr,fpr,shd,nnz,precision,f1score,g_score
+static_er_gauss_15,15,200,1,4.610987186431885,0.0006076205890402445,0.0,1.0,0.0,0,2,1.0,1.0,1.0
