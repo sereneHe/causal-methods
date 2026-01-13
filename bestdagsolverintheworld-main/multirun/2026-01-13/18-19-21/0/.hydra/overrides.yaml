@@ -1,0 +1,3 @@
+- data.dataset_type=static
+- data.sample_size=20
+- data.max_degree=1

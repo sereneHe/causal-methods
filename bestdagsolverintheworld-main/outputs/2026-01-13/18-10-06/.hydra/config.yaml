@@ -1,0 +1,70 @@
+mode:
+  generate_dynamic: true
+paths:
+  data_dir: datasets/syntheticdata
+  out_dir: results/exdbn
+data:
+  features:
+  - 5
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  - 35
+  gen_number_of_samples: 2000
+  sample_sizes:
+  - 20
+  - 200
+  - 2000
+  max_degrees:
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+  - 11
+  - 12
+  - 13
+  - 14
+  - 15
+  - 16
+  - 17
+  - 18
+  - 19
+  - 20
+  - 21
+  - 22
+  - 23
+  - 24
+  - 25
+  - 26
+  - 27
+  - 28
+  - 29
+  - 30
+  - 31
+  - 32
+  - 33
+  - 34
+  - 35
+parallel:
+  num_workers: 8
+overwrite: true
+milp:
+  time_limit: 18000
+  constraints_mode: weights
+  callback_mode: all_cycles
+  lambda1: 1.0
+  lambda2: 1.0
+  loss_type: l2
+  reg_type: l1
+  a_reg_type: l1
+  robust: false
+  weights_bound: 100.0
+  target_mip_gap: 0.001

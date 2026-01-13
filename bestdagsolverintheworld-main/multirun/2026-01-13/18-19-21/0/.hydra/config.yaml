@@ -1,0 +1,31 @@
+mode:
+  generate_dynamic: false
+overwrite: false
+paths:
+  data_dir: datasets/syntheticdata
+  out_dir: results/exdbn
+data:
+  dataset_type: static
+  sample_size: 20
+  max_degree: 1
+  features:
+  - 5
+  - 10
+  - 15
+  - 20
+  - 25
+  - 30
+  - 35
+  gen_number_of_samples: 2000
+milp:
+  time_limit: 18000
+  constraints_mode: weights
+  callback_mode: all_cycles
+  lambda1: 1.0
+  lambda2: 1.0
+  loss_type: l2
+  reg_type: l1
+  a_reg_type: l1
+  robust: false
+  weights_bound: 100.0
+  target_mip_gap: 0.001
