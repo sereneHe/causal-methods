@@ -44,3 +44,23 @@ uv pip install --python .venv/bin/python -r requirements.txt -r requirements-dev
 ## ExMAG experiments
 
 Work-in-progress.
+
+## Updated Project Structure
+
+The `src/exdbn/` directory contains the following components:
+
+```
+src/exdbn/
+├── __init__.py
+├── cli.py              # Typer CLI (entry point)
+├── config.py           # Explicit configuration (replaces env)
+├── generate.py         # Data generation
+├── run.py              # Parallel dispatcher
+├── core.py             # Core algorithm logic (slightly modified)
+```
+
+Additional files:
+- `tasks.py`: Invoke automation
+- `pyproject.toml`: Project configuration
+
+Refer to the respective files for detailed documentation.

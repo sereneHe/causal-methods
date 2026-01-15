@@ -1,0 +1,22 @@
+from dataclasses import dataclass
+from omegaconf import OmegaConf
+
+
+@dataclass
+class MilpConfig:
+    time_limit: int = 18000
+    constraints_mode: str = "weights"
+    callback_mode: str = "all_cycles"
+    lambda1: float = 1.0
+    lambda2: float = 1.0
+    loss_type: str = "l2"
+    reg_type: str = "l1"
+    a_reg_type: str = "l1"
+    robust: bool = False
+    weights_bound: float = 100.0
+    target_mip_gap: float = 0.001
+
+
+def make_milp_cfg(cfg: MilpConfig):
+    """Convert dataclass → OmegaConf"""
+    return OmegaConf.create(vars(cfg))

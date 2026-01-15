@@ -1,0 +1,26 @@
+[project]
+name = "exdbn"
+version = "0.1.0"
+description = "Test Running Time of Exact Dynamic Bayesian Network learning"
+requires-python = ">=3.9"
+
+dependencies = [
+    "numpy",
+    "pandas",
+    "omegaconf",
+    "typer",
+    "networkx>=3.2.1",
+]
+
+[project.scripts]
+exdbn = "exdbn.cli:app"
+
+[project.optional-dependencies]
+dev = [
+    "invoke",
+]
+
+[dependency-groups]
+dev = [
+    "invoke>=2.2.1",
+]
