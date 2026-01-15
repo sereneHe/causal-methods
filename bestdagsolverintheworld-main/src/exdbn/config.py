@@ -1,5 +1,5 @@
 class MilpConfig:
-    def __init__(self, param1, param2, time_limit=3600, lambda1=0.1, lambda2=0.1, loss_type='default', constraints_mode='default', callback_mode='default', robust=False):
+    def __init__(self, param1, param2, time_limit=18000, lambda1=0.1, lambda2=0.1, loss_type='default', constraints_mode='default', callback_mode='default', robust=False):
         self.param1 = param1
         self.param2 = param2
         self.time_limit = time_limit

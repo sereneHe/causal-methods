@@ -1,78 +1,85 @@
-# src/exdbn/cli.py
-import typer
+# cli.py
+from __future__ import annotations
 from pathlib import Path
-from omegaconf import OmegaConf
+import sys
 
-from exdbn.data.generate import generate_problem, save_problem
-from exdbn.data.load import load_problem_from_npz
-from exdbn.run import run_exdbn
-from exdbn.config import MilpConfig
+import typer
+
+from exdbn.generate import generate_all_datasets, generate_datasets
+from exdbn.run import run_exdbn_parallel
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 app = typer.Typer(help="EXDBN CLI")
+generate_app = typer.Typer(help="Generate synthetic datasets")
+run_app = typer.Typer(help="Run EXDBN solver")
 
+app.add_typer(generate_app, name="generate")
+app.add_typer(run_app, name="run")
 
 # -------------------------
-# generate
+# Generate commands
 # -------------------------
-@app.command()
-def generate(
-    mode: str = typer.Argument(..., help="dynamic"),
-    d: int = typer.Option(10, help="Number of variables"),
-    n: int = typer.Option(2000, help="Number of samples"),
-    p: int = typer.Option(2, help="Number of lags"),
-    out: Path = typer.Option(..., help="Output .npz file"),
+@generate_app.command("all")
+def generate_all(out: Path = typer.Option(Path("datasets/syntheticdata"), help="Output base directory")):
+    typer.echo(f"[INFO] Generating all datasets into {out}")
+    generate_all_datasets(out_dir=out)
+
+@generate_app.command("single")
+def generate_single(
+    out: Path = typer.Option(Path("datasets/syntheticdata"), help="Output directory"),
+    mode: str = typer.Option(..., help="static or dynamic")
 ):
-    """
-    Generate synthetic EXDBN dataset.
-    """
-    cfg = OmegaConf.create(
-        {
-            "problem": {
-                "name": mode,
-                "number_of_variables": d,
-                "number_of_samples": n,
-                "p": p,
-                "generator": "notears",
-                "noise_scale": 1.0,
-                "intra_edge_ratio": 0.5,
-                "inter_edge_ratio": 0.5,
-                "w_max_intra": 1.0,
-                "w_min_intra": 0.01,
-                "w_max_inter": 0.2,
-                "w_min_inter": 0.01,
-                "w_decay": 1.0,
-                "graph_type_intra": "er",
-                "graph_type_inter": "er",
-            }
-        }
+    is_dynamic = mode.lower() == "dynamic"
+    generate_datasets(out_dir=out, is_dynamic=is_dynamic)
+
+# -------------------------
+# Run commands
+# -------------------------
+@run_app.command("static")
+def run_static(
+    data_dir: Path = typer.Option(Path("datasets/syntheticdata/static"), help="Directory with npz datasets"),
+    out_dir: Path = typer.Option(Path("results/exdbn/static"), help="Output directory"),
+    sample_sizes: list[int] = typer.Option([2000], help="List of sample sizes"),
+    max_degrees: list[int] = typer.Option([5], help="List of max degrees"),
+    lambda1: float = typer.Option(1.0),
+    lambda2: float = typer.Option(1.0),
+    num_workers: int = typer.Option(None, help="Number of parallel workers"),
+):
+    run_exdbn_parallel(
+        base_data=data_dir,
+        base_out=out_dir,
+        sample_sizes=sample_sizes,
+        max_degrees=max_degrees,
+        lambda1=lambda1,
+        lambda2=lambda2,
+        mode="static",
+        num_workers=num_workers,
     )
 
-    typer.echo("Generating dataset...")
-    problem = generate_problem(cfg)
-    save_problem(problem, out)
-    typer.echo(f"Saved dataset to {out}")
-
-
-# -------------------------
-# run
-# -------------------------
-@app.command()
-def run(
-    data: Path = typer.Argument(..., help="Path to .npz dataset"),
-    max_degree: int = typer.Option(5, help="Max in/out degree"),
-    param1: float = typer.Option(0.1, help="Parameter 1 for MilpConfig"),
-    param2: float = typer.Option(0.1, help="Parameter 2 for MilpConfig"),
+@run_app.command("dynamic")
+def run_dynamic(
+    data_dir: Path = typer.Option(Path("datasets/syntheticdata/dynamic")),
+    out_dir: Path = typer.Option(Path("results/exdbn/dynamic")),
+    sample_sizes: list[int] = typer.Option([2000]),
+    max_degrees: list[int] = typer.Option([5]),
+    lambda1: float = typer.Option(1.0),
+    lambda2: float = typer.Option(1.0),
+    num_workers: int = typer.Option(None),
 ):
-    """
-    Run EXDBN on a dataset.
-    """
-    problem = load_problem_from_npz(data)
+    run_exdbn_parallel(
+        base_data=data_dir,
+        base_out=out_dir,
+        sample_sizes=sample_sizes,
+        max_degrees=max_degrees,
+        lambda1=lambda1,
+        lambda2=lambda2,
+        mode="dynamic",
+        num_workers=num_workers,
+    )
 
-    # Create MilpConfig
-    milp_cfg = MilpConfig(param1=param1, param2=param2)
-
-    metrics, gap = run_exdbn(problem, max_degree, milp_cfg)
-
-    typer.echo(f"Gap: {gap:.4f}")
-    for k, v in metrics.items():
-        typer.echo(f"{k}: {v}")
+# -------------------------
+# CLI entry
+# -------------------------
+if __name__ == "__main__":
+    app()
