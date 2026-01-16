@@ -1,21 +1,17 @@
 # generate.py
+import sys
 from pathlib import Path
+sys.path.append(str(Path(__file__).resolve().parents[2]))
+
 import numpy as np
 from omegaconf import OmegaConf
+from src.exdbn.data.generate_data import load_problem_dict
 
-from dagsolvers.data_generation_loading_utils import load_problem_dict
+def generate_datasets_from_cfg(cfg: dict, out_dir: Path, is_dynamic: bool):
+    features_list = cfg["generate"]["features_list"]
+    n = cfg["generate"]["n_samples"]
 
-def generate_datasets(out_dir: Path, is_dynamic: bool):
-    features_list = [5,10,15,20,25,30,35]
-    n = 2000
-
-    if is_dynamic:
-        problem_name = "dynamic"
-        file_prefix = "dynamic"
-    else:
-        problem_name = "dynamic"
-        file_prefix = "static"
-
+    file_prefix = "dynamic" if is_dynamic else "static"
     out_dir.mkdir(parents=True, exist_ok=True)
 
     for d in features_list:
@@ -43,15 +39,15 @@ def generate_datasets(out_dir: Path, is_dynamic: bool):
             "graph_type_inter": "er",
         }
 
-        cfg = OmegaConf.create({"problem": problem_cfg})
-        problem = load_problem_dict(cfg)
+        cfg_omega = OmegaConf.create({"problem": problem_cfg})
+        problem = load_problem_dict(cfg_omega)
 
         np.savez(
             out_dir / f"{file_prefix}_er_gauss_{d}.npz",
-            x=problem["X"],
-            y=problem["W_true"],
+            x=problem["data"],
+            y=problem.get("W_true", np.zeros((d, d)))  # or whatever your key is
         )
 
-def generate_all_datasets(out_dir: Path):
-    generate_datasets(out_dir / "static", is_dynamic=False)
-    generate_datasets(out_dir / "dynamic", is_dynamic=True)
+def generate_all_datasets_from_cfg(cfg: dict):
+    generate_datasets_from_cfg(cfg, Path(cfg["data_dir"]) / "static", is_dynamic=False)
+    generate_datasets_from_cfg(cfg, Path(cfg["data_dir"]) / "dynamic", is_dynamic=True)

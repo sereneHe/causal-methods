@@ -30,3 +30,15 @@ def save_problem(problem, out_path):
         out_path (str): Path to save the .npz file.
     """
     np.savez(out_path, **problem)
+
+def load_problem_dict(cfg):
+    """
+    Load a problem dictionary based on the provided configuration.
+
+    Args:
+        cfg (dict): Configuration dictionary containing problem parameters.
+
+    Returns:
+        dict: Problem dictionary with generated data and metadata.
+    """
+    return generate_problem(cfg)

@@ -2,13 +2,13 @@
 from __future__ import annotations
 from pathlib import Path
 import sys
-
 import typer
+import yaml
 
-from exdbn.generate import generate_all_datasets, generate_datasets
-from exdbn.run import run_exdbn_parallel
+from exdbn.generate import generate_all_datasets_from_cfg, generate_datasets_from_cfg
+from exdbn.run import run_exdbn_parallel_from_cfg
 
-sys.path.append(str(Path(__file__).resolve().parent.parent))
+sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 app = typer.Typer(help="EXDBN CLI")
 generate_app = typer.Typer(help="Generate synthetic datasets")
@@ -18,64 +18,70 @@ app.add_typer(generate_app, name="generate")
 app.add_typer(run_app, name="run")
 
 # -------------------------
+# Helper to load config
+# -------------------------
+def load_config(config_path: Path):
+    with open(config_path) as f:
+        return yaml.safe_load(f)
+
+# -------------------------
 # Generate commands
 # -------------------------
 @generate_app.command("all")
-def generate_all(out: Path = typer.Option(Path("datasets/syntheticdata"), help="Output base directory")):
-    typer.echo(f"[INFO] Generating all datasets into {out}")
-    generate_all_datasets(out_dir=out)
+def generate_all(
+    config: Path = typer.Option(Path("config.yaml"), help="Path to config.yaml"),
+):
+    cfg = load_config(config)
+    typer.echo(f"[INFO] Generating all datasets into {cfg['data_dir']}")
+    generate_all_datasets_from_cfg(cfg)
 
 @generate_app.command("single")
 def generate_single(
-    out: Path = typer.Option(Path("datasets/syntheticdata"), help="Output directory"),
-    mode: str = typer.Option(..., help="static or dynamic")
+    mode: str = typer.Option(..., help="static or dynamic"),
+    config: Path = typer.Option(Path("config.yaml"), help="Path to config.yaml"),
 ):
+    cfg = load_config(config)
     is_dynamic = mode.lower() == "dynamic"
-    generate_datasets(out_dir=out, is_dynamic=is_dynamic)
+    out_dir = Path(cfg["data_dir"]) / mode
+    generate_datasets_from_cfg(cfg, out_dir=out_dir, is_dynamic=is_dynamic)
 
 # -------------------------
 # Run commands
 # -------------------------
 @run_app.command("static")
 def run_static(
-    data_dir: Path = typer.Option(Path("datasets/syntheticdata/static"), help="Directory with npz datasets"),
-    out_dir: Path = typer.Option(Path("results/exdbn/static"), help="Output directory"),
-    sample_sizes: list[int] = typer.Option([2000], help="List of sample sizes"),
-    max_degrees: list[int] = typer.Option([5], help="List of max degrees"),
-    lambda1: float = typer.Option(1.0),
-    lambda2: float = typer.Option(1.0),
-    num_workers: int = typer.Option(None, help="Number of parallel workers"),
+    config: Path = typer.Option(Path("config.yaml"), help="Path to config.yaml"),
+    lambda1: float = typer.Option(None, help="Override lambda1"),
+    lambda2: float = typer.Option(None, help="Override lambda2"),
+    sample_sizes: list[int] = typer.Option(None, help="Override sample sizes"),
+    max_degrees: list[int] = typer.Option(None, help="Override max degrees"),
+    num_workers: int = typer.Option(None, help="Override number of workers"),
 ):
-    run_exdbn_parallel(
-        base_data=data_dir,
-        base_out=out_dir,
+    cfg = load_config(config)
+    run_exdbn_parallel_from_cfg(
+        cfg, mode="static",
+        lambda1=lambda1, lambda2=lambda2,
         sample_sizes=sample_sizes,
         max_degrees=max_degrees,
-        lambda1=lambda1,
-        lambda2=lambda2,
-        mode="static",
-        num_workers=num_workers,
+        num_workers=num_workers
     )
 
 @run_app.command("dynamic")
 def run_dynamic(
-    data_dir: Path = typer.Option(Path("datasets/syntheticdata/dynamic")),
-    out_dir: Path = typer.Option(Path("results/exdbn/dynamic")),
-    sample_sizes: list[int] = typer.Option([2000]),
-    max_degrees: list[int] = typer.Option([5]),
-    lambda1: float = typer.Option(1.0),
-    lambda2: float = typer.Option(1.0),
+    config: Path = typer.Option(Path("config.yaml"), help="Path to config.yaml"),
+    lambda1: float = typer.Option(None),
+    lambda2: float = typer.Option(None),
+    sample_sizes: list[int] = typer.Option(None),
+    max_degrees: list[int] = typer.Option(None),
     num_workers: int = typer.Option(None),
 ):
-    run_exdbn_parallel(
-        base_data=data_dir,
-        base_out=out_dir,
+    cfg = load_config(config)
+    run_exdbn_parallel_from_cfg(
+        cfg, mode="dynamic",
+        lambda1=lambda1, lambda2=lambda2,
         sample_sizes=sample_sizes,
         max_degrees=max_degrees,
-        lambda1=lambda1,
-        lambda2=lambda2,
-        mode="dynamic",
-        num_workers=num_workers,
+        num_workers=num_workers
     )
 
 # -------------------------
